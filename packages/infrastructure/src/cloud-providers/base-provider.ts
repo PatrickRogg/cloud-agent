@@ -1,0 +1,124 @@
+import { VirtualMachine } from '@repo/common/types/vm';
+import { CLOUD_AGENT } from '@repo/common/constants';
+
+export interface CloudProviderConfig {
+  [key: string]: any;
+}
+
+export interface CreateVmRequest {
+  name: string;
+  region: string;
+  instanceType: string;
+  sshKey: string;
+  vmApiKey: string;
+  userData?: string;
+  tags?: Record<string, string>;
+}
+
+export abstract class BaseCloudProvider {
+  protected config: CloudProviderConfig;
+
+  constructor(config: CloudProviderConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Create a new Vm instance
+   */
+  abstract createVm(request: CreateVmRequest): Promise<VirtualMachine>;
+
+  /**
+   * Get Vm details by provider ID
+   */
+  abstract getVm(id: string): Promise<VirtualMachine | null>;
+
+  /**
+   * List all Vms
+   */
+  abstract listVms(): Promise<VirtualMachine[]>;
+
+  /**
+   * Delete a Vm by provider ID
+   */
+  abstract deleteVm(id: string): Promise<void>;
+
+  /**
+   * Start a Vm by provider ID
+   */
+  abstract startVm(id: string): Promise<void>;
+
+  /**
+   * Stop a Vm by provider ID
+   */
+  abstract stopVm(id: string): Promise<void>;
+
+  /**
+   * Get Vm status by provider ID
+   */
+  abstract getVmStatus(id: string): Promise<string>;
+
+  /**
+   * Get available regions for this provider
+   */
+  abstract getAvailableRegions(): Promise<string[]>;
+
+  /**
+   * Get available instance types for this provider
+   */
+  abstract getAvailableInstanceTypes(): Promise<string[]>;
+
+  /**
+   * Generate cloud-init user data for Vm setup
+   */
+  protected generateUserData({ vmApiKey }: { vmApiKey: string }): string {
+    return `#cloud-config
+packages:
+  - nodejs
+  - npm
+  - git
+  - curl
+  - fail2ban
+  - ufw
+
+runcmd:
+  # Configure firewall
+  - ufw --force enable
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow ssh
+  - ufw allow ${CLOUD_AGENT.VM_API_PORT}/tcp
+  
+  # Configure fail2ban
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+
+  # Install js dependencies
+  - npm install -g pnpm@10.12.4
+  - pnpm install -g bun
+  
+  # Install PM2 globally
+  - pnpm install -g pm2
+  
+  # Clone and setup Vm API server
+  - cd /opt
+  - git clone https://github.com/PatrickRogg/cloud-agent.git
+  - cd /opt/cloud-agent && pnpm --filter @repo/vm-api-server --filter @repo/common install --frozen-lockfile
+
+  # Create .env file
+  - touch /opt/cloud-agent/.env
+  - echo "API_KEY=${vmApiKey}" > /opt/cloud-agent/.env
+  - echo "PORT=${CLOUD_AGENT.VM_API_PORT}" >> /opt/cloud-agent/.env
+  - echo "NODE_ENV=production" >> /opt/cloud-agent/.env
+  
+  # Start the Vm API server
+  - pm2 start pnpm --filter @repo/vm-api-server start --name agent-api
+  - pm2 startup
+  - pm2 save
+  
+  # Set up log rotation
+  - pm2 install pm2-logrotate
+
+final_message: "Vm setup complete. Agent API server is running on port ${CLOUD_AGENT.VM_API_PORT}."
+`;
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@repo/vm-api-server",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot ./src/app.ts",
+    "start": "bun run ./src/app.ts",
+    "lint": "eslint \"**/*.ts*\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.98",
+    "@hono/zod-validator": "^0.7.2",
+    "@repo/common": "workspace:*",
+    "dedent": "^1.6.0",
+    "hono": "^4.9.4",
+    "typescript": "^5.9.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/bun": "^1.2.21"
+  }
+}

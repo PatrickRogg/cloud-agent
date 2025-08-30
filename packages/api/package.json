@@ -1,0 +1,23 @@
+{
+  "name": "@repo/api",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint \"**/*.ts*\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/common": "workspace:*",
+    "@repo/storage": "workspace:*",
+    "@repo/infrastructure": "workspace:*",
+    "neverthrow": "^8.2.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "typescript": "^5.9.2"
+  },
+  "exports": {
+    "./vm": "./src/routes/vm.ts"
+  }
+}

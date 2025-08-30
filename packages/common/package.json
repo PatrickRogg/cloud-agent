@@ -1,0 +1,27 @@
+{
+  "name": "@repo/common",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint \"**/*.ts*\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "typescript": "^5.9.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^24.3.0"
+  },
+  "exports": {
+    "./types/*": "./src/types/*.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./logger": "./src/logger.ts",
+    "./ai/*": "./src/ai/*.ts",
+    "./constants": "./src/constants.ts"
+  }
+}
