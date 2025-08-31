@@ -94,24 +94,34 @@ runcmd:
 
   # Install js dependencies
   - npm install -g pnpm@10.12.4
-  - pnpm install -g bun
-  
-  # Install PM2 globally
-  - pnpm install -g pm2
+  - npm install -g bun
   
   # Clone and setup Vm API server
   - cd /opt
   - git clone https://github.com/PatrickRogg/cloud-agent.git
   - cd /opt/cloud-agent && pnpm --filter @repo/vm-api-server --filter @repo/common install --frozen-lockfile
-
-  # Create .env file
-  - touch /opt/cloud-agent/.env
-  - echo "API_KEY=${vmApiKey}" > /opt/cloud-agent/.env
-  - echo "PORT=${CLOUD_AGENT.VM_API_PORT}" >> /opt/cloud-agent/.env
-  - echo "NODE_ENV=production" >> /opt/cloud-agent/.env
   
+  # Install PM2 globally
+  - npm install -g pm2
+
+  # Create ecosystem.config.js file
+  - |
+    cat > /opt/cloud-agent/ecosystem.config.js << 'EOF'
+    module.exports = {
+      apps: [{
+        name: "vm-api-server",
+        script: "pnpm --filter @repo/vm-api-server start",
+        env: {
+          NODE_ENV: "production",
+          API_KEY: "${vmApiKey}",
+          PORT: "${CLOUD_AGENT.VM_API_PORT}"
+        }
+      }]
+    }
+    EOF
+
   # Start the Vm API server
-  - pm2 start pnpm --filter @repo/vm-api-server start --name agent-api
+  - pm2 start ecosystem.config.js
   - pm2 startup
   - pm2 save
   
