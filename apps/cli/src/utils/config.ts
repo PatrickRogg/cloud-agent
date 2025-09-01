@@ -32,6 +32,12 @@ export const loadConfig = (): Config | null => {
 
 const createDefaultConfig = async (): Promise<Config> => {
   const config: Config = {
+    version: '0.0.1',
+    auth: {
+      anthropic: {
+        oAuthToken: 'my-claude-code-oauth-token'
+      }
+    },
     vm: {
       sshKey: '~/.ssh/id_ed25519',
       apiKey: generateApiKey('sk'),

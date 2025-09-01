@@ -24,10 +24,29 @@ export const vmConfigSchema = z.object({
   instances: z.array(vmInstanceConfigSchema)
 });
 
-export const configSchema = z.object({
-  vm: vmConfigSchema
+const authConfigSchema = z.object({
+  anthropic: z.union([
+    z
+      .object({
+        apiKey: z.string().min(1, 'Claude Code API key is required').optional(),
+        oAuthToken: z.string().min(1, 'OAuth token is required').optional()
+      })
+      .refine(data => data.apiKey || data.oAuthToken, {
+        message: 'Either API key or OAuth token is required'
+      })
+      .refine(data => !data.apiKey || !data.oAuthToken, {
+        message: 'Only one of API key or OAuth token is allowed'
+      })
+  ])
 });
 
+export const configSchema = z.object({
+  version: z.string().min(1, 'Version is required'),
+  vm: vmConfigSchema,
+  auth: authConfigSchema
+});
+
+export type AuthConfig = z.infer<typeof authConfigSchema>;
 export type CloudProviderConfig = z.infer<typeof cloudProviderConfigSchema>;
 export type VmInstanceConfig = z.infer<typeof vmInstanceConfigSchema>;
 export type VmConfig = z.infer<typeof vmConfigSchema>;

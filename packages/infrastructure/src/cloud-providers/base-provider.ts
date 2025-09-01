@@ -1,4 +1,5 @@
 import { CLOUD_AGENT } from '@repo/common/constants';
+import { AuthConfig } from '@repo/common/types/config';
 import { VirtualMachine, VmApiStatus } from '@repo/common/types/vm';
 import axios from 'axios';
 
@@ -89,7 +90,7 @@ export abstract class BaseCloudProvider {
   /**
    * Generate cloud-init user data for Vm setup
    */
-  protected generateUserData({ vmApiKey }: { vmApiKey: string }): string {
+  protected generateUserData({ vmApiKey, auth }: { vmApiKey: string; auth: AuthConfig }): string {
     return `#cloud-config
 packages:
   - nodejs
@@ -133,7 +134,9 @@ runcmd:
         env: {
           NODE_ENV: "production",
           API_KEY: "${vmApiKey}",
-          PORT: "${CLOUD_AGENT.VM_API_PORT}"
+          PORT: "${CLOUD_AGENT.VM_API_PORT}",
+          ${auth.anthropic.oAuthToken ? `CLAUDE_CODE_OAUTH_TOKEN: "${auth.anthropic.oAuthToken}"` : `CLAUDE_CODE_API_KEY: "${auth.anthropic.apiKey}"`}
+          ${auth.anthropic.apiKey ? `ANTHROPIC_API_KEY: "${auth.anthropic.apiKey}"` : ''}
         }
       }]
     }
