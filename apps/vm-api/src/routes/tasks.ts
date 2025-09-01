@@ -15,7 +15,7 @@ import {
   type Task
 } from '../utils/task-status';
 
-export const taskRouter = new Hono();
+export const tasksRouter = new Hono();
 
 const runTaskSchema = z.object({
   task: z.object({
@@ -41,7 +41,7 @@ const runTaskSchema = z.object({
   })
 });
 
-taskRouter.post('/task/run', zValidator('json', runTaskSchema), async c => {
+tasksRouter.post('/run', zValidator('json', runTaskSchema), async c => {
   const { task, agent } = c.req.valid('json');
 
   try {
@@ -202,8 +202,8 @@ taskRouter.post('/task/run', zValidator('json', runTaskSchema), async c => {
   });
 });
 
-taskRouter.get(
-  '/task/:taskId/status',
+tasksRouter.get(
+  '/:taskId/status',
   zValidator('param', z.object({ taskId: z.string().min(1, 'Task ID is required') })),
   async c => {
     const taskId = c.req.valid('param').taskId;
@@ -227,35 +227,12 @@ taskRouter.get(
   }
 );
 
-taskRouter.get('/machine/availability', async c => {
-  try {
-    const availability = await isMachineAvailable();
-    return c.json({
-      available: availability.available,
-      currentTask: availability.currentTask || null
-    });
-  } catch (error) {
-    logger.error('Failed to check machine availability:', error);
-    return c.json({ error: 'Failed to check machine availability' }, 500);
-  }
-});
-
-taskRouter.get('/tasks', async c => {
+tasksRouter.get('/', async c => {
   try {
     const tasks = await getAllTaskStatuses();
     return c.json({ tasks });
   } catch (error) {
     logger.error('Failed to get all task statuses:', error);
     return c.json({ error: 'Failed to retrieve task statuses' }, 500);
-  }
-});
-
-taskRouter.post('/machine/clear', async c => {
-  try {
-    await clearMachineStatus();
-    return c.json({ message: 'Machine status cleared successfully' });
-  } catch (error) {
-    logger.error('Failed to clear machine status:', error);
-    return c.json({ error: 'Failed to clear machine status' }, 500);
   }
 });

@@ -15,6 +15,6 @@ app.get('/health', c => {
 });
 
 export default {
-  port: 7000,
+  port: 8000,
   fetch: app.fetch
 };

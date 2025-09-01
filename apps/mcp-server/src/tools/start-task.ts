@@ -5,6 +5,7 @@ import { z } from 'zod/v3';
 import { createMcpTool } from '../types/mcp.js';
 import { config } from '../utils/config.js';
 import { db } from '../utils/db.js';
+import { CLOUD_AGENT } from '@repo/common/constants';
 
 const inputSchema = {
   instructions: z.string().describe('The instructions or description of the task to be executed')
@@ -109,19 +110,25 @@ export const startTaskTool = createMcpTool({
         // Check if we have time for another retry
         const remainingTime = maxRetryDuration - (Date.now() - startTime);
         if (remainingTime < retryDelay) {
-          logger.info(`Not enough time remaining (${Math.round(remainingTime / 1000)}s) for another retry attempt`);
+          logger.info(
+            `Not enough time remaining (${Math.round(remainingTime / 1000)}s) for another retry attempt`
+          );
           break;
         }
 
-        logger.info(`All VMs busy, retrying in ${retryDelay / 1000} seconds... (${Math.round(remainingTime / 1000)}s remaining)`);
+        logger.info(
+          `All VMs busy, retrying in ${retryDelay / 1000} seconds... (${Math.round(remainingTime / 1000)}s remaining)`
+        );
         await new Promise(resolve => setTimeout(resolve, retryDelay));
 
         // Refresh VM list for next attempt
         const refreshedVms = await getVms(config);
         availableVms.length = 0;
-        availableVms.push(...refreshedVms.filter(
-          vm => vm.status === 'running' && vm.apiStatus === 'healthy' && vm.ip
-        ));
+        availableVms.push(
+          ...refreshedVms.filter(
+            vm => vm.status === 'running' && vm.apiStatus === 'healthy' && vm.ip
+          )
+        );
 
         if (availableVms.length === 0) {
           logger.warn(`No available VMs found on retry attempt ${retryCount}`);
@@ -136,7 +143,9 @@ export const startTaskTool = createMcpTool({
       });
 
       const totalTimeSpent = Math.round((Date.now() - startTime) / 1000);
-      logger.error(`Failed to schedule task ${task.id} after ${retryCount} attempts over ${totalTimeSpent} seconds`);
+      logger.error(
+        `Failed to schedule task ${task.id} after ${retryCount} attempts over ${totalTimeSpent} seconds`
+      );
 
       return {
         content: [
@@ -178,13 +187,18 @@ export const startTaskTool = createMcpTool({
  */
 async function checkVmAvailability(vmIp: string): Promise<boolean> {
   try {
-    const response = await fetch(`http://${vmIp}:7000/machine/availability`, {
+    const response = await fetch(`http://${vmIp}:${CLOUD_AGENT.VM_API_PORT}/machine/availability`, {
       headers: {
         'x-api-key': config.vm.apiKey
       }
     });
 
     if (!response.ok) {
+      logger.error(
+        `Failed to check VM availability for ${vmIp}:`,
+        response.statusText,
+        await response.text()
+      );
       return false;
     }
 
@@ -203,7 +217,7 @@ async function scheduleTaskOnVm(
   task: { id: string; instructions: string },
   vmIp: string
 ): Promise<void> {
-  const response = await fetch(`http://${vmIp}:7000/task/run`, {
+  const response = await fetch(`http://${vmIp}:${CLOUD_AGENT.VM_API_PORT}/task/run`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
