@@ -1,5 +1,6 @@
 import { logger } from '@repo/common/logger';
-import { VirtualMachine, VmStatus } from '@repo/common/types/vm';
+import { VirtualMachine, VmStatus, VmApiStatus } from '@repo/common/types/vm';
+import { CLOUD_AGENT } from '@repo/common/constants';
 import axios, { AxiosInstance } from 'axios';
 import { readFileSync } from 'fs';
 import { homedir } from 'os';
@@ -72,7 +73,7 @@ export class HetznerProvider extends BaseCloudProvider {
       );
       const server = response.data.server;
 
-      return this.mapHetznerServerToVm(server);
+      return await this.mapHetznerServerToVm(server);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         logger.error(error.response?.data);
@@ -86,7 +87,7 @@ export class HetznerProvider extends BaseCloudProvider {
   async getVm(id: string): Promise<VirtualMachine | null> {
     try {
       const response = await this.client.get<{ server: HetznerServer }>(`/servers/${id}`);
-      return this.mapHetznerServerToVm(response.data.server);
+      return await this.mapHetznerServerToVm(response.data.server);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         return null;
@@ -107,7 +108,9 @@ export class HetznerProvider extends BaseCloudProvider {
         }
       });
 
-      return response.data.servers.map(server => this.mapHetznerServerToVm(server));
+      return await Promise.all(
+        response.data.servers.map(server => this.mapHetznerServerToVm(server))
+      );
     } catch (error) {
       throw new VmError(
         `Failed to list Hetzner Vms: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -295,11 +298,14 @@ export class HetznerProvider extends BaseCloudProvider {
     }
   }
 
-  private mapHetznerServerToVm(server: HetznerServer): VirtualMachine {
+  private async mapHetznerServerToVm(server: HetznerServer): Promise<VirtualMachine> {
+    const apiStatus = await this.checkVmApiStatus(server.public_net.ipv4?.ip);
+
     return {
       id: server.id.toString(),
       name: server.name,
       status: this.mapHetznerStatus(server.status),
+      apiStatus,
       provider: 'hetzner',
       ip: server.public_net.ipv4?.ip,
       region: server.datacenter.location.name,

@@ -1,5 +1,6 @@
-import { VirtualMachine } from '@repo/common/types/vm';
 import { CLOUD_AGENT } from '@repo/common/constants';
+import { VirtualMachine, VmApiStatus } from '@repo/common/types/vm';
+import axios from 'axios';
 
 export interface CloudProviderConfig {
   [key: string]: any;
@@ -66,6 +67,24 @@ export abstract class BaseCloudProvider {
    * Get available instance types for this provider
    */
   abstract getAvailableInstanceTypes(): Promise<string[]>;
+
+  /**
+   * Check Vm API status
+   */
+  protected async checkVmApiStatus(ip: string | undefined): Promise<VmApiStatus> {
+    if (!ip) {
+      return 'no-ip-assigned';
+    }
+
+    try {
+      const response = await axios.get(`http://${ip}:${CLOUD_AGENT.VM_API_PORT}/health`, {
+        timeout: 5000
+      });
+      return response.status === 200 ? 'healthy' : 'unhealthy';
+    } catch (error) {
+      return 'unhealthy';
+    }
+  }
 
   /**
    * Generate cloud-init user data for Vm setup

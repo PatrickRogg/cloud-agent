@@ -42,11 +42,12 @@ agentRoutes.post('/claude-code/run', zValidator('json', claudeCodeSchema), async
 
     try {
       // Send initial status
-      const initialMessage = JSON.stringify({
-        type: 'status',
-        message: 'Starting Claude code execution...',
-        timestamp: new Date().toISOString()
-      }) + '\n';
+      const initialMessage =
+        JSON.stringify({
+          type: 'status',
+          message: 'Starting Claude code execution...',
+          timestamp: new Date().toISOString()
+        }) + '\n';
       await stream.write(new TextEncoder().encode(initialMessage));
 
       let messageCount = 0;
@@ -63,72 +64,79 @@ agentRoutes.post('/claude-code/run', zValidator('json', claudeCodeSchema), async
         messageCount++;
 
         // Stream each message as JSON lines
-        const messageData = JSON.stringify({
-          type: message.type,
-          content: message,
-          messageCount,
-          timestamp: new Date().toISOString()
-        }) + '\n';
+        const messageData =
+          JSON.stringify({
+            type: message.type,
+            content: message,
+            messageCount,
+            timestamp: new Date().toISOString()
+          }) + '\n';
         await stream.write(new TextEncoder().encode(messageData));
 
         // Handle different message types based on actual claude-code types
         if (message.type === 'result') {
           hasResult = true;
-          const resultMessage = JSON.stringify({
-            type: 'final_result',
-            result: (message as any).result || message,
-            messageCount,
-            timestamp: new Date().toISOString()
-          }) + '\n';
+          const resultMessage =
+            JSON.stringify({
+              type: 'final_result',
+              result: (message as any).result || message,
+              messageCount,
+              timestamp: new Date().toISOString()
+            }) + '\n';
           await stream.write(new TextEncoder().encode(resultMessage));
         } else if ((message as any).type === 'error') {
-          const errorMessage = JSON.stringify({
-            type: 'error',
-            error: (message as any).error || 'Unknown error occurred',
-            messageCount,
-            timestamp: new Date().toISOString()
-          }) + '\n';
+          const errorMessage =
+            JSON.stringify({
+              type: 'error',
+              error: (message as any).error || 'Unknown error occurred',
+              messageCount,
+              timestamp: new Date().toISOString()
+            }) + '\n';
           await stream.write(new TextEncoder().encode(errorMessage));
           break;
         } else if ((message as any).type === 'tool_call') {
-          const toolCallMessage = JSON.stringify({
-            type: 'tool_execution',
-            tool: (message as any).tool,
-            input: (message as any).input,
-            messageCount,
-            timestamp: new Date().toISOString()
-          }) + '\n';
+          const toolCallMessage =
+            JSON.stringify({
+              type: 'tool_execution',
+              tool: (message as any).tool,
+              input: (message as any).input,
+              messageCount,
+              timestamp: new Date().toISOString()
+            }) + '\n';
           await stream.write(new TextEncoder().encode(toolCallMessage));
         } else if ((message as any).type === 'tool_result') {
-          const toolResultMessage = JSON.stringify({
-            type: 'tool_result',
-            tool: (message as any).tool,
-            result: (message as any).result,
-            messageCount,
-            timestamp: new Date().toISOString()
-          }) + '\n';
+          const toolResultMessage =
+            JSON.stringify({
+              type: 'tool_result',
+              tool: (message as any).tool,
+              result: (message as any).result,
+              messageCount,
+              timestamp: new Date().toISOString()
+            }) + '\n';
           await stream.write(new TextEncoder().encode(toolResultMessage));
         }
       }
 
       // Send completion status
-      const completionMessage = JSON.stringify({
-        type: 'completed',
-        message: hasResult
-          ? 'Execution completed successfully'
-          : 'Execution completed without final result',
-        totalMessages: messageCount,
-        timestamp: new Date().toISOString()
-      }) + '\n';
+      const completionMessage =
+        JSON.stringify({
+          type: 'completed',
+          message: hasResult
+            ? 'Execution completed successfully'
+            : 'Execution completed without final result',
+          totalMessages: messageCount,
+          timestamp: new Date().toISOString()
+        }) + '\n';
       await stream.write(new TextEncoder().encode(completionMessage));
     } catch (error) {
       logger.error('Claude code execution error:', error);
 
-      const errorMessage = JSON.stringify({
-        type: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        timestamp: new Date().toISOString()
-      }) + '\n';
+      const errorMessage =
+        JSON.stringify({
+          type: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+          timestamp: new Date().toISOString()
+        }) + '\n';
       await stream.write(new TextEncoder().encode(errorMessage));
     } finally {
       clearTimeout(timeoutId);

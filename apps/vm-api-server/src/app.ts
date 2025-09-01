@@ -1,5 +1,5 @@
-import { logger } from '@repo/common/logger';
 import { CLOUD_AGENT } from '@repo/common/constants';
+import { logger } from '@repo/common/logger';
 import { Hono } from 'hono';
 import { agentRoutes } from './routes/claude-code';
 
@@ -7,8 +7,8 @@ const app = new Hono();
 
 // API Key authentication middleware
 app.use('*', async (c, next) => {
-  // Skip auth for health check endpoints
-  if (c.req.path === '/health' || c.req.path === '/claude/health') {
+  // Skip auth for health check endpoint
+  if (c.req.path === '/health') {
     return next();
   }
 
@@ -39,11 +39,7 @@ app.route('/agent', agentRoutes);
 
 app.get('/health', c => {
   return c.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    services: {
-      claude: 'available'
-    }
+    status: 'ok'
   });
 });
 

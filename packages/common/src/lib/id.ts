@@ -1,5 +1,5 @@
-import { randomUUIDv7 } from 'bun';
+import { randomUUID } from 'crypto';
 
 export function uuid(): string {
-  return randomUUIDv7();
+  return randomUUID();
 }

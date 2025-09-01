@@ -9,7 +9,11 @@ import { v4 as uuid } from 'uuid';
 
 export class JsonFileStorage implements BaseStorage {
   private filePath: string;
-  private data: { vms: VirtualMachine[]; agents: Agent[]; tasks: Task[] } = { vms: [], agents: [], tasks: [] };
+  private data: { vms: VirtualMachine[]; agents: Agent[]; tasks: Task[] } = {
+    vms: [],
+    agents: [],
+    tasks: []
+  };
   private initialized = false;
 
   constructor({ filePath }: { filePath: string }) {

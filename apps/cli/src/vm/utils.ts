@@ -1,5 +1,5 @@
 import { logger } from '@repo/common/logger';
-import { VirtualMachine } from '@repo/common/types/vm';
+import { VirtualMachine, VmApiStatus } from '@repo/common/types/vm';
 
 export const logStatusOfVms = (vms: VirtualMachine[]) => {
   if (vms.length === 0) {
@@ -12,42 +12,75 @@ export const logStatusOfVms = (vms: VirtualMachine[]) => {
   const nameWidth = Math.max(4, ...vms.map(vm => vm.name.length));
   const statusWidth = Math.max(6, ...vms.map(vm => vm.status.length)) + 4; // +2 for icon and space
   const ipWidth = Math.max(10, ...vms.map(vm => (vm.ip ?? 'N/A').length));
+  const apiStatusWidth = Math.max(9, ...vms.map(vm => vm.apiStatus.length)) + 4; // +2 for icon and space
 
   // Helper function to create border lines
   const createBorder = (chars: [string, string, string, string]) => {
-    return chars[0] + 
-           chars[1].repeat(idWidth + 2) + chars[2] +
-           chars[1].repeat(nameWidth + 2) + chars[2] +
-           chars[1].repeat(statusWidth + 2) + chars[2] +
-           chars[1].repeat(ipWidth + 2) + chars[3];
+    return (
+      chars[0] +
+      chars[1].repeat(idWidth + 2) +
+      chars[2] +
+      chars[1].repeat(nameWidth + 2) +
+      chars[2] +
+      chars[1].repeat(statusWidth + 2) +
+      chars[2] +
+      chars[1].repeat(ipWidth + 2) +
+      chars[2] +
+      chars[1].repeat(apiStatusWidth + 2) +
+      chars[3]
+    );
   };
 
   // Status icon mapping
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'running': return '🟢';
-      case 'creating': return '🔵';
-      case 'stopped': return '🟡';
-      case 'error': return '🔴';
-      case 'deleted': return '⚫';
-      default: return '🔴';
+      case 'running':
+        return '🟢';
+      case 'creating':
+        return '🔵';
+      case 'stopped':
+        return '🟡';
+      case 'error':
+        return '🔴';
+      case 'deleted':
+        return '⚫';
+      default:
+        return '🔴';
+    }
+  };
+
+  // API status icon mapping
+  const getApiStatusIcon = (apiStatus: VmApiStatus) => {
+    switch (apiStatus) {
+      case 'healthy':
+        return '✅';
+      case 'unhealthy':
+        return '❌';
+      case 'no-ip-assigned':
+        return '❓';
+      case 'unknown':
+        return '❓';
+      default:
+        return '❓';
     }
   };
 
   logger.info(`\n📊 Virtual Machine Status:`);
   logger.info(createBorder(['┌', '─', '┬', '┐']));
   logger.info(
-    `│ ${'ID'.padEnd(idWidth)} │ ${'Name'.padEnd(nameWidth)} │ ${'Status'.padEnd(statusWidth)} │ ${'IP Address'.padEnd(ipWidth)} │`
+    `│ ${'ID'.padEnd(idWidth)} │ ${'Name'.padEnd(nameWidth)} │ ${'Status'.padEnd(statusWidth)} │ ${'IP Address'.padEnd(ipWidth)} │ ${'Agent Api'.padEnd(apiStatusWidth)} │`
   );
   logger.info(createBorder(['├', '─', '┼', '┤']));
-  
+
   vms.forEach(vm => {
     const statusIcon = getStatusIcon(vm.status);
     const statusText = `${statusIcon} ${vm.status}`;
+    const apiIcon = getApiStatusIcon(vm.apiStatus);
+    const apiStatusText = `${apiIcon} ${vm.apiStatus}`;
     logger.info(
-      `│ ${vm.id.padEnd(idWidth)} │ ${vm.name.padEnd(nameWidth)} │ ${statusText.padEnd(statusWidth)} │ ${(vm.ip ?? 'N/A').padEnd(ipWidth)} │`
+      `│ ${vm.id.padEnd(idWidth)} │ ${vm.name.padEnd(nameWidth)} │ ${statusText.padEnd(statusWidth)} │ ${(vm.ip ?? 'N/A').padEnd(ipWidth)} │ ${apiStatusText.padEnd(apiStatusWidth)} │`
     );
   });
-  
+
   logger.info(createBorder(['└', '─', '┴', '┘']));
 };

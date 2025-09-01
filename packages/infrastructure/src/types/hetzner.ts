@@ -1,7 +1,16 @@
 export interface HetznerServer {
   id: number;
   name: string;
-  status: 'initializing' | 'starting' | 'running' | 'stopping' | 'off' | 'deleting' | 'migrating' | 'rebuilding' | 'unknown';
+  status:
+    | 'initializing'
+    | 'starting'
+    | 'running'
+    | 'stopping'
+    | 'off'
+    | 'deleting'
+    | 'migrating'
+    | 'rebuilding'
+    | 'unknown';
   created: string;
   public_net: {
     ipv4: {
