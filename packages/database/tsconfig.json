@@ -3,9 +3,9 @@
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "typeRoots": ["node_modules/@types", "./src/types"],
     "paths": {
-      "@repo/api/*": ["./src/*"],
-    },
-    "typeRoots": ["node_modules/@types"]
+      "@repo/common/*": ["../common/src/*"]
+    }
   }
 }

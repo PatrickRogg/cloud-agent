@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/storage": "workspace:*",
     "@repo/common": "workspace:*",
     "axios": "^1.11.0",
     "zod": "^4.1.5"

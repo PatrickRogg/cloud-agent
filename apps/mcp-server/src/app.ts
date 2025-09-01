@@ -6,7 +6,6 @@ const app = new Hono();
 
 app.all('/mcp', async c => {
   const transport = new StreamableHTTPTransport();
-
   await mcpServer.connect(transport);
   return transport.handleRequest(c);
 });

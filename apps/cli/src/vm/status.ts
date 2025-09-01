@@ -1,5 +1,5 @@
-import { getStatusOfVms as getStatusOfVmsApi } from '@repo/api/vm';
-import { loadConfig } from '@utils/config';
+import { getVms } from '@repo/infrastructure';
+import { loadConfig } from '@repo/common/lib/config';
 import { logError } from '@utils/logger';
 import { logStatusOfVms } from './utils';
 
@@ -12,11 +12,11 @@ export const vmStatus = async () => {
     return;
   }
 
-  const result = await getStatusOfVmsApi(config);
-  if (result.isErr()) {
-    logError('❌', `Failed to get virtual machine status: ${result.error}`);
+  try {
+    const result = await getVms(config);
+    logStatusOfVms(result);
+  } catch (error) {
+    logError('❌', `Failed to get virtual machine status: ${error}`);
     return;
   }
-
-  logStatusOfVms(result.value);
 };

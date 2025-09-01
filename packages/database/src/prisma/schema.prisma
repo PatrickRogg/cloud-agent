@@ -1,0 +1,40 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "./generated"
+  previewFeatures        = ["postgresqlExtensions", "relationJoins", "queryCompiler", "driverAdapters"]
+  runtime                = "bun"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+generator json {
+  provider  = "prisma-json-types-generator"
+  output    = "./generated"
+  namespace = "PrismaJson"
+}
+
+datasource db {
+  provider  = "sqlite"
+  url       = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model Task {
+  id String @id @default(cuid())
+
+  instructions String
+  status       TaskStatus @default(QUEUED)
+
+  virtualMachineId String?
+
+  createdOn DateTime @default(now())
+  updatedOn DateTime @updatedAt
+}

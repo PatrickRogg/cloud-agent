@@ -1,0 +1,30 @@
+{
+  "name": "@repo/database",
+  "version": "0.0.1",
+  "description": "Data persistence layer",
+  "scripts": {
+    "lint": "eslint \"**/*.ts*\"",
+    "typecheck": "tsc --noEmit",
+    "studio": "prisma studio --port 5556",
+    "migrate": "prisma migrate dev --schema=./src/prisma",
+    "generate": "prisma generate --schema=./src/prisma",
+    "migrate:deploy": "prisma migrate deploy --schema=./src/prisma",
+    "reset": "prisma migrate reset --schema=./src/prisma"
+  },
+  "dependencies": {
+    "@repo/common": "workspace:*",
+    "@prisma/adapter-libsql": "^6.15.0",
+    "@prisma/client": "^6.15.0",
+    "prisma": "^6.15.0",
+    "prisma-json-types-generator": "^3.6.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "typescript": "^5.3.3"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./types": "./src/types.ts"
+  }
+}

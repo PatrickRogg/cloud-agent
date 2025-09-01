@@ -1,6 +1,6 @@
-import { syncVms as syncVmsApi } from '@repo/api/vm';
+import { loadConfig } from '@repo/common/lib/config';
+import { syncVms as syncVmsInfrastructure } from '@repo/infrastructure';
 import { logError } from '@utils/logger';
-import { loadConfig } from '../utils/config';
 import { logStatusOfVms } from './utils';
 
 export const syncVms = async () => {
@@ -11,11 +11,10 @@ export const syncVms = async () => {
     return;
   }
 
-  const result = await syncVmsApi(config);
-  if (result.isErr()) {
-    logError('❌', `Failed to sync virtual machines: ${JSON.stringify(result.error)}`);
-    return;
+  try {
+    const result = await syncVmsInfrastructure(config);
+    logStatusOfVms(result);
+  } catch (error) {
+    logError('❌', `Failed to sync virtual machines: ${error}`);
   }
-
-  logStatusOfVms(result.value);
 };

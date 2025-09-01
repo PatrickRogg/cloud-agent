@@ -1,7 +1,7 @@
 import { CLOUD_AGENT } from '@repo/common/constants';
 import { logger } from '@repo/common/logger';
 import { Hono } from 'hono';
-import { agentsRoutes } from './routes/claude-code';
+import { taskRouter } from './routes/tasks';
 
 const app = new Hono();
 
@@ -34,7 +34,7 @@ app.use('*', async (c, next) => {
   return next();
 });
 
-app.route('/agents', agentsRoutes);
+app.route('/tasks', taskRouter);
 
 app.get('/health', c => {
   return c.json({

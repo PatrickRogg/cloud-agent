@@ -1,31 +1,36 @@
+import { generateApiKey } from '@repo/common/lib/api-key';
 import { Config, configSchema } from '@repo/common/types/config';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { homedir } from 'os';
 import { dirname, resolve } from 'path';
 import { z } from 'zod';
-import { logError, logInfo, logWarning } from './logger';
-import { generateApiKey } from '@repo/common/lib/api-key';
+import { logger } from '../logger';
 
-const DEFAULT_CONFIG_PATH = '.cloudagent/config.json';
+const DEFAULT_CONFIG_PATH = '~/.cloudagent/config.json';
+
+const expandTildePath = (path: string): string => {
+  return path.startsWith('~') ? path.replace('~', homedir()) : path;
+};
 
 export const loadConfig = (): Config | null => {
-  const resolvedPath = resolve(DEFAULT_CONFIG_PATH);
+  const resolvedPath = resolve(expandTildePath(DEFAULT_CONFIG_PATH));
 
   if (!existsSync(resolvedPath)) {
-    logWarning('⚠️', `Config file not found at: ${resolvedPath}`);
+    logger.warn(`⚠️ Config file not found at: ${resolvedPath}`);
     return null;
   }
 
   try {
     const configContent = readFileSync(resolvedPath, 'utf-8');
     const config = configSchema.parse(JSON.parse(configContent));
-    logInfo('📁', `Loaded config from: ${resolvedPath}`);
+    logger.info(`📁 Loaded config from: ${resolvedPath}`);
     return config;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      logError('❌', `Error loading config file: ${error.message}`);
+      logger.error(`❌ Error loading config file: ${error.message}`);
       throw new Error(`Error loading config file: ${error.message}`);
     }
-    logError('❌', `Error loading config file: ${error}`);
+    logger.error(`❌ Error loading config file: ${error}`);
     throw new Error(`Error loading config file: ${error}`);
   }
 };
@@ -59,10 +64,11 @@ const createDefaultConfig = async (): Promise<Config> => {
       ]
     }
   };
-  logInfo('✨', 'Creating default config...');
-  mkdirSync(dirname(DEFAULT_CONFIG_PATH), { recursive: true });
-  writeFileSync(DEFAULT_CONFIG_PATH, JSON.stringify(config, null, 2));
-  logInfo('📁', `Created default config at: ${DEFAULT_CONFIG_PATH}`);
+  logger.info('✨ Creating default config...');
+  const resolvedPath = resolve(expandTildePath(DEFAULT_CONFIG_PATH));
+  mkdirSync(dirname(resolvedPath), { recursive: true });
+  writeFileSync(resolvedPath, JSON.stringify(config, null, 2));
+  logger.info(`📁 Created default config at: ${resolvedPath}`);
   return config;
 };
 
