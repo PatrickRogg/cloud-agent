@@ -12,7 +12,7 @@ export const vmStatus = async () => {
     return;
   }
 
-  const result = await getStatusOfVmsApi(config.vm);
+  const result = await getStatusOfVmsApi(config);
   if (result.isErr()) {
     logError('❌', `Failed to get virtual machine status: ${result.error}`);
     return;

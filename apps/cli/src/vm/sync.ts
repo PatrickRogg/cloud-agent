@@ -11,7 +11,7 @@ export const syncVms = async () => {
     return;
   }
 
-  const result = await syncVmsApi(config.vm);
+  const result = await syncVmsApi(config);
   if (result.isErr()) {
     logError('❌', `Failed to sync virtual machines: ${JSON.stringify(result.error)}`);
     return;

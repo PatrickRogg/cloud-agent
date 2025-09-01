@@ -67,13 +67,10 @@ agentsRoutes.post('/claude-code/run', zValidator('json', claudeCodeSchema), asyn
         options: {
           cwd,
           maxTurns: options?.maxTurns,
+          permissionMode: 'bypassPermissions',
           allowedTools: options?.allowedTools,
           pathToClaudeCodeExecutable: process.env.PATH_TO_CLAUDE_CODE_EXECUTABLE,
-          executable: 'bun',
-          env: {
-            ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-            CLAUDE_CODE_OAUTH_TOKEN: process.env.CLAUDE_CODE_OAUTH_TOKEN
-          }
+          executable: 'bun'
         }
       })) {
         messageCount++;

@@ -11,7 +11,7 @@ export const destroyVms = async () => {
     return;
   }
 
-  const result = await destroyVmsApi(config.vm);
+  const result = await destroyVmsApi(config);
   if (result.isErr()) {
     logError('❌', `Failed to destroy virtual machines: ${result.error}`);
     return;

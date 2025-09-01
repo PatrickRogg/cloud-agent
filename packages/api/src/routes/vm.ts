@@ -1,4 +1,4 @@
-import { VmConfig } from '@repo/common/types/config';
+import { Config, VmConfig } from '@repo/common/types/config';
 import { VirtualMachine } from '@repo/common/types/vm';
 import {
   destroyVms as destroyVmsInfrastructure,
@@ -8,7 +8,7 @@ import {
 import { Result, err, ok } from 'neverthrow';
 import { ErrorResult } from '../utils/error';
 
-export const syncVms = async (config: VmConfig): Promise<Result<VirtualMachine[], ErrorResult>> => {
+export const syncVms = async (config: Config): Promise<Result<VirtualMachine[], ErrorResult>> => {
   try {
     const result = await syncVmsInfrastructure(config);
     return ok(result);
@@ -21,7 +21,7 @@ export const syncVms = async (config: VmConfig): Promise<Result<VirtualMachine[]
 };
 
 export const destroyVms = async (
-  config: VmConfig
+  config: Config
 ): Promise<Result<VirtualMachine[], ErrorResult>> => {
   try {
     const result = await destroyVmsInfrastructure(config);
@@ -35,7 +35,7 @@ export const destroyVms = async (
 };
 
 export const getStatusOfVms = async (
-  config: VmConfig
+  config: Config
 ): Promise<Result<VirtualMachine[], ErrorResult>> => {
   try {
     const result = await getVms(config);

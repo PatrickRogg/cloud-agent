@@ -29,13 +29,16 @@ const authConfigSchema = z.object({
     z
       .object({
         apiKey: z.string().min(1, 'Claude Code API key is required').optional(),
-        oAuthToken: z.string().min(1, 'OAuth token is required').optional()
+        claudeDirectory: z
+          .string()
+          .min(1, 'Claude directory is required. Usually ~/.claude')
+          .optional()
       })
-      .refine(data => data.apiKey || data.oAuthToken, {
-        message: 'Either API key or OAuth token is required'
+      .refine(data => data.apiKey  || data.claudeDirectory, {
+        message: 'Either API key, or Claude directory is required'
       })
-      .refine(data => !data.apiKey || !data.oAuthToken, {
-        message: 'Only one of API key or OAuth token is allowed'
+      .refine(data => [data.apiKey, data.claudeDirectory].filter(Boolean).length === 1, {
+        message: 'Only one of API key, or Claude directory is allowed'
       })
   ])
 });

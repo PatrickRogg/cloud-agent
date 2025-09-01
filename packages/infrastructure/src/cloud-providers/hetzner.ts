@@ -1,6 +1,5 @@
 import { logger } from '@repo/common/logger';
-import { VirtualMachine, VmStatus, VmApiStatus } from '@repo/common/types/vm';
-import { CLOUD_AGENT } from '@repo/common/constants';
+import { VirtualMachine, VmStatus } from '@repo/common/types/vm';
 import axios, { AxiosInstance } from 'axios';
 import { readFileSync } from 'fs';
 import { homedir } from 'os';
@@ -18,6 +17,7 @@ import {
   HetznerSshKey
 } from '../types/hetzner';
 import { BaseCloudProvider, CreateVmRequest } from './base-provider';
+import { Config } from '@repo/common/types/config';
 
 export interface HetznerConfig {
   token: string;
@@ -40,12 +40,15 @@ export class HetznerProvider extends BaseCloudProvider {
     });
   }
 
-  async createVm(request: CreateVmRequest): Promise<VirtualMachine> {
+  async createVm(request: CreateVmRequest, config: Config): Promise<VirtualMachine> {
     try {
-      const userData = this.generateUserData({ vmApiKey: request.vmApiKey });
+      const userData = this.generateUserData({
+        vmApiKey: config.vm.apiKey,
+        auth: config.auth
+      });
 
       // Get or create SSH key
-      const publicKey = this.readPublicKeyFromPath(request.sshKey);
+      const publicKey = this.readPublicKeyFromPath(config.vm.sshKey);
       const sshKeyId = await this.createSshKeyIfNotExists({ publicKey });
 
       const createRequest: HetznerCreateServerRequest = {

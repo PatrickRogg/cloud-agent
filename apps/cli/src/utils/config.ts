@@ -35,7 +35,7 @@ const createDefaultConfig = async (): Promise<Config> => {
     version: '0.0.1',
     auth: {
       anthropic: {
-        oAuthToken: 'my-claude-code-oauth-token'
+        claudeDirectory: '~/.claude'
       }
     },
     vm: {
